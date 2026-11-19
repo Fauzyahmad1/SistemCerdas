@@ -8,5 +8,3 @@ requests
 scikit-learn
 scipy
 sqlparse
-whitenoise
-gunicorn
