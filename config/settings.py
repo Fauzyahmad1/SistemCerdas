@@ -20,6 +20,8 @@ SECRET_KEY = os.getenv("SECRET_KEY", "django-insecure-r(@ein1dkh1a41xo+kt3!_)mx1
 DEBUG = True
 
 ALLOWED_HOSTS = ["*"]
+CSRF_TRUSTED_ORIGINS = ["https://*.hf.space", "https://*.onrender.com", "http://127.0.0.1", "http://localhost"]
+
 
 
 # Application definition

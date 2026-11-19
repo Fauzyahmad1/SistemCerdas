@@ -23,6 +23,18 @@ def get_firestore_client():
         return _firestore_client
 
     try:
+        # 1. Cek apakah ada kunci Firebase berupa JSON string di environment variable (untuk cloud/Hugging Face)
+        json_env = os.getenv("FIREBASE_KEY_JSON", "").strip()
+        if json_env:
+            import json as json_mod
+            cert_dict = json_mod.loads(json_env)
+            if not firebase_admin._apps:
+                sertifikat = credentials.Certificate(cert_dict)
+                firebase_admin.initialize_app(sertifikat)
+            _firestore_client = firestore.client()
+            return _firestore_client
+
+        # 2. Cek apakah ada file fisik firebase-key.json
         path_kunci = os.getenv("FIREBASE_KEY_PATH", "firebase-key.json").strip()
         if not path_kunci:
             return None
