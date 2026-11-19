@@ -31,6 +31,19 @@ df = df[(df["km"] >= 0) & (df["harga"] >= 1_000_000)]
 df = df.drop_duplicates()
 print("Setelah buang duplikat/aneh   :", len(df))
 
+# Langkah 5b: buang outlier harga per merek+model+tahun (metode IQR 1.5x)
+def hapus_outlier(group):
+    Q1 = group["harga"].quantile(0.25)
+    Q3 = group["harga"].quantile(0.75)
+    IQR = Q3 - Q1
+    batas_bawah = Q1 - 1.5 * IQR
+    batas_atas  = Q3 + 1.5 * IQR
+    return group[(group["harga"] >= batas_bawah) & (group["harga"] <= batas_atas)]
+
+df = df.groupby(["merek", "model", "tahun"], group_keys=False).apply(hapus_outlier)
+df = df.reset_index(drop=True)
+print("Setelah buang outlier harga   :", len(df))
+
 # Langkah 5: ubah harga ke satuan juta Rupiah agar angkanya mudah dibaca
 df["harga"] = (df["harga"] / 1_000_000).round(2)
 
