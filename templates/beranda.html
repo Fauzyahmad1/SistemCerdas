@@ -1,0 +1,168 @@
+{% extends 'base.html' %}
+
+{% block title %}Beranda - Sistem Prediksi Motor Bekas{% endblock %}
+
+{% block content %}
+<!-- Banner Peringatan Jujur Data Generator -->
+<div class="warning-banner">
+    <div class="warning-icon"><svg class="ikon" width="22" height="22" aria-hidden="true"><use href="#i-alert-triangle"/></svg></div>
+    <div>
+        <strong>Peringatan Kejujuran Data Akademik:</strong>
+        Dataset motor bekas ini bersumber dari repositori <code>Mufti129/motor-price-id</code> (17.000 baris mentah) yang berdasarkan analisis pola data <strong>tampaknya dibuat oleh generator, bukan iklan pasar nyata</strong> (External_ID berawalan <code>gen_</code>, tiap merek tepat 1.000 baris, URL pencarian sintetis). Hasil estimasi adalah proyek percontohan akademik Sistem Cerdas dan bukan taksiran harga pasar resmi.
+    </div>
+</div>
+
+<!-- Header Ringkasan -->
+<div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px;">
+    <div>
+        <h2 style="font-size: 26px; font-weight: 800; color: #1E293B; letter-spacing: -0.5px;">Dashboard Ringkasan Model</h2>
+        <p style="color: #64748B; font-size: 14px; margin-top: 4px;">Pengembangan Modul 14 Sistem Cerdas: Integrasi Regresi Machine Learning, RAG AI, dan Cloud Firestore.</p>
+    </div>
+    <div style="display: flex; gap: 10px;">
+        <a href="{% url 'prediksi' %}" class="btn btn-primary">
+            <svg class="ikon" width="16" height="16" aria-hidden="true"><use href="#i-calculator"/></svg>
+            <span>Mulai Prediksi</span>
+        </a>
+        <a href="{% url 'grafik' %}" class="btn btn-outline">
+            <svg class="ikon" width="16" height="16" aria-hidden="true"><use href="#i-bar-chart"/></svg>
+            <span>Lihat Grafik</span>
+        </a>
+    </div>
+</div>
+
+<!-- Grid Kartu Statistik -->
+<div class="grid-stats">
+    <div class="stat-card">
+        <span class="stat-label">Total Data Bersih</span>
+        <div class="stat-value">{{ metrik.jumlah_data|default:"12.571" }}</div>
+        <div class="stat-sub">Dari 17.000 data mentah (setelah filter)</div>
+        <span class="stat-badge badge-info">100% Siap Model</span>
+    </div>
+
+    <div class="stat-card">
+        <span class="stat-label">Model Terpilih</span>
+        <div class="stat-value" style="font-size: 24px; color: #4C63D2;">{{ model_terpilih }}</div>
+        <div class="stat-sub">Dipilih berdasarkan MAE terendah</div>
+        <span class="stat-badge badge-success">Pipeline Sklearn</span>
+    </div>
+
+    <div class="stat-card">
+        <span class="stat-label">Mean Absolute Error (MAE)</span>
+        <div class="stat-value">{{ data_evaluasi.mae }} <span style="font-size: 16px; font-weight: 600;">Juta</span></div>
+        <div class="stat-sub">Rata-rata deviasi pada data uji</div>
+        <span class="stat-badge badge-success">Selisih Terkecil</span>
+    </div>
+
+    <div class="stat-card">
+        <span class="stat-label">Skor Akurasi (R² Uji)</span>
+        <div class="stat-value">{{ data_evaluasi.r2_uji }}</div>
+        <div class="stat-sub">R² Latih: {{ data_evaluasi.r2_latih }} (Overfitting)</div>
+        <span class="stat-badge badge-warning">Evaluasi Jujur</span>
+    </div>
+</div>
+
+<!-- Grid 2 Kolom: Perbandingan Model & Analisis Khusus -->
+<div class="grid-2">
+    <!-- Kartu Perbandingan Model -->
+    <div class="card">
+        <h3 class="card-title"><svg class="ikon" width="20" height="20" aria-hidden="true"><use href="#i-scale"/></svg> Perbandingan Evaluasi Dua Model</h3>
+        <p class="card-subtitle">Dievaluasi menggunakan pembagian data 80% latih ({{ metrik.jumlah_latih }} baris) dan 20% uji ({{ metrik.jumlah_uji }} baris) dengan <code>random_state=42</code>.</p>
+
+        <div class="table-responsive">
+            <table class="table-custom">
+                <thead>
+                    <tr>
+                        <th>Model Algoritma</th>
+                        <th>MAE (Juta Rp)</th>
+                        <th>RMSE</th>
+                        <th>R² Uji</th>
+                        <th>R² Latih</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr style="background: rgba(76, 99, 210, 0.05); font-weight: 600;">
+                        <td><svg class="ikon" width="16" height="16" style="color: #10B981; margin-right: 4px;" aria-hidden="true"><use href="#i-tree"/></svg> {{ model_terpilih }} (Terpilih)</td>
+                        <td><span style="color: #10B981; font-weight: 700;">Rp{{ data_evaluasi.mae }} Jt</span></td>
+                        <td>{{ data_evaluasi.rmse }}</td>
+                        <td><span class="stat-badge badge-success">{{ data_evaluasi.r2_uji }}</span></td>
+                        <td>{{ data_evaluasi.r2_latih }}</td>
+                    </tr>
+                    <tr>
+                        <td><svg class="ikon" width="16" height="16" style="color: #4C63D2; margin-right: 4px;" aria-hidden="true"><use href="#i-trending-up"/></svg> Regresi Linear (Pembanding)</td>
+                        <td>Rp{{ eval_linear.mae }} Jt</td>
+                        <td>{{ eval_linear.rmse }}</td>
+                        <td><span class="stat-badge badge-info">{{ eval_linear.r2_uji }}</span></td>
+                        <td>{{ eval_linear.r2_latih }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div style="margin-top: 18px; padding: 14px; background: #F8FAFC; border-radius: var(--radius-sm); font-size: 13px; line-height: 1.5; color: #475569;">
+            <strong>Catatan Overfitting & Multikolinearitas:</strong><br>
+            • <em>Random Forest</em> mengalami <strong>overfitting</strong> karena skor R² latih ({{ data_evaluasi.r2_latih }}) jauh lebih tinggi dibanding skor R² data uji ({{ data_evaluasi.r2_uji }}). Meski demikian, MAE data ujinya ({{ data_evaluasi.mae }} juta) tetap lebih baik daripada Regresi Linear.<br>
+            • Kolom <code>tahun</code> dan <code>km</code> memiliki korelasi sangat kuat (sekitar -0.95), sehingga bobot koefisien Regresi Linear rentan tidak stabil. Random Forest disertakan sebagai pembanding non-linear.
+        </div>
+    </div>
+
+    <!-- Kartu Navigasi Fitur Cepat -->
+    <div class="card">
+        <h3 class="card-title"><svg class="ikon" width="20" height="20" aria-hidden="true"><use href="#i-rocket"/></svg> Eksplorasi 4 Fitur Wajib</h3>
+        <p class="card-subtitle">Semua modul dibangun terintegrasi dan memiliki sistem fallback jika layanan eksternal bermasalah.</p>
+
+        <div style="display: flex; flex-direction: column; gap: 14px;">
+            <a href="{% url 'prediksi' %}" style="display: flex; align-items: center; justify-content: space-between; padding: 16px; background: #F8FAFC; border-radius: var(--radius-md); text-decoration: none; border: 1px solid #E2E8F0; transition: all 0.2s ease;">
+                <div style="display: flex; align-items: center; gap: 14px;">
+                    <div style="width: 40px; height: 40px; background: #EEF2FF; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #4C63D2;">
+                        <svg class="ikon" style="width: 20px; height: 20px;" aria-hidden="true"><use href="#i-calculator"/></svg>
+                    </div>
+                    <div>
+                        <h4 style="font-size: 14px; font-weight: 700; color: #1E293B;">1. Prediksi Harga Motor Bekas</h4>
+                        <p style="font-size: 12px; color: #64748B;">Input spesifikasi motor, hitung estimasi harga, simpan ke Firestore & minta penjelasan AI.</p>
+                    </div>
+                </div>
+                <span style="font-weight: 700; color: #4C63D2;">➔</span>
+            </a>
+
+            <a href="{% url 'grafik' %}" style="display: flex; align-items: center; justify-content: space-between; padding: 16px; background: #F8FAFC; border-radius: var(--radius-md); text-decoration: none; border: 1px solid #E2E8F0; transition: all 0.2s ease;">
+                <div style="display: flex; align-items: center; gap: 14px;">
+                    <div style="width: 40px; height: 40px; background: #DCFCE7; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #166534;">
+                        <svg class="ikon" style="width: 20px; height: 20px;" aria-hidden="true"><use href="#i-bar-chart"/></svg>
+                    </div>
+                    <div>
+                        <h4 style="font-size: 14px; font-weight: 700; color: #1E293B;">2. Visualisasi Grafik Analitik</h4>
+                        <p style="font-size: 12px; color: #64748B;">4 Grafik interaktif Chart.js: tren tahun, harga per merek, jarak tempuh vs harga, & komparasi akurasi.</p>
+                    </div>
+                </div>
+                <span style="font-weight: 700; color: #4C63D2;">➔</span>
+            </a>
+
+            <a href="{% url 'chatbot' %}" style="display: flex; align-items: center; justify-content: space-between; padding: 16px; background: #F8FAFC; border-radius: var(--radius-md); text-decoration: none; border: 1px solid #E2E8F0; transition: all 0.2s ease;">
+                <div style="display: flex; align-items: center; gap: 14px;">
+                    <div style="width: 40px; height: 40px; background: #FEF3C7; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #92400E;">
+                        <svg class="ikon" style="width: 20px; height: 20px;" aria-hidden="true"><use href="#i-message-circle"/></svg>
+                    </div>
+                    <div>
+                        <h4 style="font-size: 14px; font-weight: 700; color: #1E293B;">3. Chatbot FAQ (RAG Mini)</h4>
+                        <p style="font-size: 12px; color: #64748B;">Asisten AI cerdas menjawab pertanyaan legalitas, cek mesin, dan tips tawar menawar dengan fallback aman.</p>
+                    </div>
+                </div>
+                <span style="font-weight: 700; color: #4C63D2;">➔</span>
+            </a>
+
+            <a href="{% url 'riwayat' %}" style="display: flex; align-items: center; justify-content: space-between; padding: 16px; background: #F8FAFC; border-radius: var(--radius-md); text-decoration: none; border: 1px solid #E2E8F0; transition: all 0.2s ease;">
+                <div style="display: flex; align-items: center; gap: 14px;">
+                    <div style="width: 40px; height: 40px; background: #F3E8FF; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #7E22CE;">
+                        <svg class="ikon" style="width: 20px; height: 20px;" aria-hidden="true"><use href="#i-history"/></svg>
+                    </div>
+                    <div>
+                        <h4 style="font-size: 14px; font-weight: 700; color: #1E293B;">4. Riwayat Cloud Firestore</h4>
+                        <p style="font-size: 12px; color: #64748B;">Membaca 20 riwayat prediksi terakhir langsung dari database NoSQL Google Cloud Firestore.</p>
+                    </div>
+                </div>
+                <span style="font-weight: 700; color: #4C63D2;">➔</span>
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

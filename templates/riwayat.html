@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+
+{% block title %}Riwayat Prediksi Firestore{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px; margin-bottom: 8px;">
+    <div>
+        <h2 style="font-size: 26px; font-weight: 800; color: #1E293B; letter-spacing: -0.5px;">Riwayat Prediksi Cloud Firestore</h2>
+        <p style="color: #64748B; font-size: 14px; margin-top: 4px;">Menampilkan 20 catatan taksiran harga motor bekas terbaru yang tersimpan di Google Cloud Firestore.</p>
+    </div>
+    <div>
+        <a href="{% url 'riwayat' %}" class="btn btn-outline">
+            <svg class="ikon" width="16" height="16" aria-hidden="true"><use href="#i-refresh-cw"/></svg>
+            <span>Segarkan Data</span>
+        </a>
+    </div>
+</div>
+
+<!-- Status Koneksi Firebase -->
+{% if status_koneksi %}
+    <div style="background: #DCFCE7; border-left: 4px solid #10B981; color: #166534; padding: 12px 18px; border-radius: var(--radius-sm); font-size: 13.5px; display: flex; align-items: center; justify-content: space-between;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <svg class="ikon" width="18" height="18" aria-hidden="true"><use href="#i-cloud"/></svg>
+            <span><strong>Status Firestore:</strong> Terhubung ke koleksi <code>prediksi_motor</code>. {{ pesan_koneksi }}</span>
+        </div>
+        <span class="stat-badge badge-success" style="display: inline-flex; align-items: center; gap: 4px;"><svg class="ikon" width="14" height="14" aria-hidden="true"><use href="#i-circle-check"/></svg> Online</span>
+    </div>
+{% else %}
+    <div style="background: #FEF3C7; border-left: 4px solid #F59E0B; color: #92400E; padding: 12px 18px; border-radius: var(--radius-sm); font-size: 13.5px; display: flex; align-items: center; justify-content: space-between;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <svg class="ikon" width="18" height="18" aria-hidden="true"><use href="#i-alert-triangle"/></svg>
+            <span><strong>Status Firestore:</strong> {{ pesan_koneksi }}</span>
+        </div>
+        <span class="stat-badge badge-warning" style="display: inline-flex; align-items: center; gap: 4px;"><svg class="ikon" width="14" height="14" aria-hidden="true"><use href="#i-alert-triangle"/></svg> Fallback Aktif</span>
+    </div>
+{% endif %}
+
+<div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <h3 class="card-title" style="margin-bottom: 0;"><svg class="ikon" width="20" height="20" aria-hidden="true"><use href="#i-clipboard-list"/></svg> Daftar 20 Transaksi Prediksi Terakhir</h3>
+        <span style="font-size: 12.5px; color: #64748B;">Total Ditampilkan: <strong>{{ daftar_riwayat|length }}</strong> data</span>
+    </div>
+
+    {% if daftar_riwayat %}
+        <div class="table-responsive">
+            <table class="table-custom">
+                <thead>
+                    <tr>
+                        <th>Waktu Prediksi</th>
+                        <th>Merek & Model</th>
+                        <th>Tahun</th>
+                        <th>Kilometer</th>
+                        <th>Pajak</th>
+                        <th>Penjual</th>
+                        <th>Model ML</th>
+                        <th>Harga Prediksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in daftar_riwayat %}
+                        <tr>
+                            <td style="font-size: 12px; color: #64748B;">{{ item.waktu_tampil }}</td>
+                            <td>
+                                <strong>{{ item.merek }}</strong> 
+                                <span style="color: #4C63D2;">{{ item.model }}</span>
+                            </td>
+                            <td>{{ item.tahun }}</td>
+                            <td>{{ item.km|floatformat:0 }} km</td>
+                            <td>
+                                {% if 'hidup' in item.status_pajak|lower or 'panjang' in item.status_pajak|lower %}
+                                    <span class="stat-badge badge-success" style="padding: 2px 8px; font-size: 11px;">{{ item.status_pajak }}</span>
+                                {% else %}
+                                    <span class="stat-badge badge-warning" style="padding: 2px 8px; font-size: 11px;">{{ item.status_pajak }}</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ item.jenis_penjual }}</td>
+                            <td><span style="font-size: 11.5px; color: #64748B;">{{ item.model_ml|default:"Random Forest" }}</span></td>
+                            <td>
+                                <strong style="color: #10B981; font-size: 15px;">Rp {{ item.harga_prediksi }} Jt</strong>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <!-- Tampilan Saat Kosong atau Offline -->
+        <div style="padding: 48px 20px; text-align: center;">
+            <div style="color: #94A3B8; margin-bottom: 12px;"><svg class="ikon" style="width: 42px; height: 42px;" aria-hidden="true"><use href="#i-folder-open"/></svg></div>
+            <h4 style="font-size: 16px; font-weight: 700; color: #1E293B;">Belum Ada Riwayat Prediksi</h4>
+            <p style="font-size: 13px; color: #94A3B8; max-width: 380px; margin: 8px auto 20px auto;">
+                {% if not status_koneksi %}
+                    Koneksi ke Firestore sedang dinonaktifkan atau offline. Aplikasi tetap dapat digunakan untuk prediksi secara lokal.
+                {% else %}
+                    Belum ada data prediksi yang tersimpan di Firestore. Coba lakukan perhitungan taksiran harga di halaman Prediksi.
+                {% endif %}
+            </p>
+            <a href="{% url 'prediksi' %}" class="btn btn-primary">
+                <svg class="ikon" width="16" height="16" aria-hidden="true"><use href="#i-calculator"/></svg>
+                <span>Buat Prediksi Pertama</span>
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,242 @@
+{% extends 'base.html' %}
+
+{% block title %}Prediksi Harga Motor Bekas{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 8px;">
+    <h2 style="font-size: 26px; font-weight: 800; color: #1E293B; letter-spacing: -0.5px;">Prediksi Harga Motor Bekas</h2>
+    <p style="color: #64748B; font-size: 14px; margin-top: 4px;">Masukkan parameter motor bekas untuk memperoleh perkiraan harga pasar berdasarkan model Machine Learning.</p>
+</div>
+
+<!-- Alert Notifikasi Firebase / Error -->
+{% if firebase_pesan %}
+    {% if firebase_sukses %}
+        <div style="background: #DCFCE7; border-left: 4px solid #10B981; color: #166534; padding: 12px 18px; border-radius: var(--radius-sm); font-size: 13.5px; display: flex; align-items: center; gap: 10px;">
+            <svg class="ikon" width="18" height="18" aria-hidden="true"><use href="#i-cloud"/></svg>
+            <span><strong>Firebase Firestore:</strong> {{ firebase_pesan }}</span>
+        </div>
+    {% else %}
+        <div style="background: #FEF3C7; border-left: 4px solid #F59E0B; color: #92400E; padding: 12px 18px; border-radius: var(--radius-sm); font-size: 13.5px; display: flex; align-items: center; gap: 10px;">
+            <svg class="ikon" width="18" height="18" aria-hidden="true"><use href="#i-alert-triangle"/></svg>
+            <span><strong>Catatan Firestore:</strong> {{ firebase_pesan }} (Hasil prediksi tetap ditampilkan).</span>
+        </div>
+    {% endif %}
+{% endif %}
+
+<div class="grid-2">
+    <!-- Formulir Input -->
+    <div class="card">
+        <h3 class="card-title"><svg class="ikon" width="20" height="20" aria-hidden="true"><use href="#i-edit"/></svg> Parameter Spesifikasi Kendaraan</h3>
+        <p class="card-subtitle">Pilihan model otomatis menyesuaikan merek motor yang dipilih.</p>
+
+        <form method="POST" id="formPrediksi">
+            {% csrf_token %}
+
+            <!-- Merek -->
+            <div class="form-group">
+                <label class="form-label" for="selectMerek">Merek Kendaraan</label>
+                <select name="merek" id="selectMerek" class="form-control" required>
+                    <option value="" disabled {% if not input_data.merek %}selected{% endif %}>-- Pilih Merek --</option>
+                    {% for m in daftar_merek %}
+                        <option value="{{ m }}" {% if input_data.merek == m %}selected{% endif %}>{{ m }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Model (Dinamis) -->
+            <div class="form-group">
+                <label class="form-label" for="selectModel">Model Kendaraan</label>
+                <select name="model" id="selectModel" class="form-control" required>
+                    <option value="" disabled selected>-- Pilih Merek Terlebih Dahulu --</option>
+                </select>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                <!-- Tahun -->
+                <div class="form-group">
+                    <label class="form-label" for="inputTahun">Tahun Pembuatan</label>
+                    <input type="number" name="tahun" id="inputTahun" class="form-control" 
+                           min="{{ rentang_tahun.0 }}" max="{{ rentang_tahun.1 }}" 
+                           value="{{ input_data.tahun|default:'2022' }}" required>
+                    <small style="color: #94A3B8; font-size: 11.5px;">Rentang: {{ rentang_tahun.0 }} - {{ rentang_tahun.1 }}</small>
+                </div>
+
+                <!-- Kilometer -->
+                <div class="form-group">
+                    <label class="form-label" for="inputKm">Jarak Tempuh (KM)</label>
+                    <input type="number" name="km" id="inputKm" class="form-control" 
+                           min="0" max="250000" step="500" 
+                           value="{{ input_data.km|default:'18000' }}" required>
+                    <small style="color: #94A3B8; font-size: 11.5px;">Contoh: 15.000 km</small>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                <!-- Status Pajak -->
+                <div class="form-group">
+                    <label class="form-label" for="selectPajak">Status Pajak</label>
+                    <select name="status_pajak" id="selectPajak" class="form-control" required>
+                        {% for sp in status_pajak_list %}
+                            <option value="{{ sp }}" {% if input_data.status_pajak == sp %}selected{% endif %}>{{ sp }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Jenis Penjual -->
+                <div class="form-group">
+                    <label class="form-label" for="selectPenjual">Jenis Penjual</label>
+                    <select name="jenis_penjual" id="selectPenjual" class="form-control" required>
+                        {% for jp in jenis_penjual_list %}
+                            <option value="{{ jp }}" {% if input_data.jenis_penjual == jp %}selected{% endif %}>{{ jp }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div style="margin-top: 10px; display: flex; gap: 12px; align-items: center;">
+                <button type="submit" class="btn btn-primary" style="flex-grow: 1;">
+                    <svg class="ikon" width="16" height="16" aria-hidden="true"><use href="#i-zap"/></svg>
+                    <span>Hitung Taksiran Harga</span>
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Hasil Prediksi & Penjelasan AI -->
+    <div class="card" style="display: flex; flex-direction: column;">
+        <h3 class="card-title"><svg class="ikon" width="20" height="20" aria-hidden="true"><use href="#i-lightbulb"/></svg> Hasil Estimasi & Analisis</h3>
+        <p class="card-subtitle">Estimasi dihitung menggunakan pipeline <strong>{{ metrik.model_terpakai }}</strong> (MAE: Rp{{ metrik.hasil.Random_Forest.mae|default:'4.93' }} Jt).</p>
+
+        {% if hasil_prediksi %}
+            <div class="result-box">
+                <div class="result-title">Estimasi Harga Wajar</div>
+                <div class="result-price">Rp {{ hasil_prediksi }} <span style="font-size: 22px;">Juta</span></div>
+                <div class="result-note">
+                    <svg class="ikon" width="16" height="16" style="margin-right: 4px;" aria-hidden="true"><use href="#i-pin"/></svg><strong>Perkiraan, bukan harga pasti.</strong> Taksiran untuk {{ input_data.merek }} {{ input_data.model }} ({{ input_data.tahun }}), jarak tempuh {{ input_data.km }} km, pajak {{ input_data.status_pajak }}.
+                </div>
+            </div>
+
+            <!-- Tombol Panggil AI untuk Penjelasan -->
+            <div style="margin-top: 20px;">
+                <button type="button" id="btnJelaskanAI" class="btn btn-outline" style="width: 100%;">
+                    <svg class="ikon" width="16" height="16" aria-hidden="true"><use href="#i-bot"/></svg>
+                    <span>Jelaskan Hasil Ini dengan AI</span>
+                </button>
+            </div>
+
+            <!-- Kotak Penjelasan AI -->
+            <div id="kotakAI" class="ai-box" style="{% if not penjelasan_ai %}display: none;{% endif %} margin-top: 16px;">
+                <div class="ai-header">
+                    <span style="display: inline-flex; align-items: center; gap: 6px;"><svg class="ikon" width="16" height="16" aria-hidden="true"><use href="#i-sparkle"/></svg> Penjelasan Logis Asisten AI:</span>
+                </div>
+                <p id="teksAI" class="ai-text">{{ penjelasan_ai|default:"Sedang memuat analisis AI..." }}</p>
+            </div>
+        {% else %}
+            <!-- State Kosong Belum Prediksi -->
+            <div style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 20px; text-align: center; border: 2px dashed #E2E8F0; border-radius: var(--radius-md); background: #FAFBFD;">
+                <div style="color: #94A3B8; margin-bottom: 12px;"><svg class="ikon" width="48" height="48" aria-hidden="true"><use href="#i-bike"/></svg></div>
+                <h4 style="font-size: 16px; font-weight: 700; color: #1E293B;">Belum Ada Prediksi</h4>
+                <p style="font-size: 13px; color: #94A3B8; max-width: 320px; margin-top: 6px;">
+                    Silakan isi formulir spesifikasi di samping kiri dan tekan tombol <strong>Hitung Taksiran Harga</strong>.
+                </p>
+            </div>
+        {% endif %}
+
+        <!-- Ringkasan Info Model -->
+        <div style="margin-top: auto; padding-top: 20px; border-top: 1px solid #F1F5F9; font-size: 12px; color: #64748B; display: flex; justify-content: space-between;">
+            <span>Model: <strong>{{ metrik.model_terpakai }}</strong></span>
+            <span>R² Uji: <strong>{{ metrik.hasil.Random_Forest.r2_uji|default:'0.872' }}</strong></span>
+            <span>Status Firestore: <strong style="color: #10B981;">Aktif</strong></span>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Data relasi merek -> daftar model dari metrik.json
+    const pilihanModelData = {{ pilihan_model_json|safe }};
+    const selectMerek = document.getElementById('selectMerek');
+    const selectModel = document.getElementById('selectModel');
+    const modelDipilih = "{{ input_data.model|default:'' }}";
+
+    function updateDropdownModel(merek, pilihanAktif = '') {
+        selectModel.innerHTML = '';
+        if (!merek || !pilihanModelData[merek]) {
+            const opt = document.createElement('option');
+            opt.value = '';
+            opt.textContent = '-- Pilih Merek Terlebih Dahulu --';
+            selectModel.appendChild(opt);
+            return;
+        }
+
+        const daftarModel = pilihanModelData[merek];
+        const optDefault = document.createElement('option');
+        optDefault.value = '';
+        optDefault.disabled = true;
+        optDefault.selected = !pilihanAktif;
+        optDefault.textContent = '-- Pilih Model Motor --';
+        selectModel.appendChild(optDefault);
+
+        daftarModel.forEach(modelNama => {
+            const opt = document.createElement('option');
+            opt.value = modelNama;
+            opt.textContent = modelNama;
+            if (modelNama === pilihanAktif) {
+                opt.selected = true;
+            }
+            selectModel.appendChild(opt);
+        });
+    }
+
+    // Inisialisasi saat halaman pertama kali dibuka
+    if (selectMerek.value) {
+        updateDropdownModel(selectMerek.value, modelDipilih);
+    }
+
+    selectMerek.addEventListener('change', function() {
+        updateDropdownModel(this.value);
+    });
+
+    // Handler Tombol "Jelaskan Hasil Ini dengan AI"
+    const btnJelaskanAI = document.getElementById('btnJelaskanAI');
+    if (btnJelaskanAI) {
+        btnJelaskanAI.addEventListener('click', async function() {
+            const kotakAI = document.getElementById('kotakAI');
+            const teksAI = document.getElementById('teksAI');
+            kotakAI.style.display = 'block';
+            teksAI.innerHTML = '<em>Sedang menghubungi asisten Gemini AI...</em>';
+            btnJelaskanAI.disabled = true;
+
+            try {
+                const response = await fetch("{% url 'api_jelaskan_prediksi' %}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        merek: "{{ input_data.merek }}",
+                        model: "{{ input_data.model }}",
+                        tahun: "{{ input_data.tahun }}",
+                        km: "{{ input_data.km }}",
+                        status_pajak: "{{ input_data.status_pajak }}",
+                        jenis_penjual: "{{ input_data.jenis_penjual }}",
+                        harga: "{{ hasil_prediksi }}"
+                    })
+                });
+
+                const data = await response.json();
+                if (data.status === 'ok') {
+                    teksAI.textContent = data.penjelasan;
+                } else {
+                    teksAI.textContent = data.penjelasan || "Gagal memperoleh penjelasan: " + data.pesan;
+                }
+            } catch (err) {
+                teksAI.textContent = "Koneksi ke layanan AI terganggu. Silakan coba kembali sesaat lagi.";
+            } finally {
+                btnJelaskanAI.disabled = false;
+            }
+        });
+    }
+</script>
+{% endblock %}

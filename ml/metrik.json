@@ -1,0 +1,179 @@
+{
+  "model_terpakai": "Random Forest",
+  "jumlah_data": 12571,
+  "jumlah_latih": 10056,
+  "jumlah_uji": 2515,
+  "hasil": {
+    "Regresi Linear": {
+      "mae": 9.06,
+      "rmse": 16.59,
+      "r2_uji": 0.81,
+      "r2_latih": 0.796
+    },
+    "Random Forest": {
+      "mae": 4.93,
+      "rmse": 13.59,
+      "r2_uji": 0.872,
+      "r2_latih": 0.986
+    }
+  },
+  "pilihan_model": {
+    "Alva": [
+      "Alva Cervo",
+      "Alva N3",
+      "Alva One"
+    ],
+    "Benelli & Keeway": [
+      "Keeway Shiny 150",
+      "Keeway V250Fi & Benda",
+      "Keeway V250Fi / Benda",
+      "Motobi 200",
+      "Napoleon 250",
+      "Panarea & Shiny",
+      "Panarea 125",
+      "Patagonian Eagle 250"
+    ],
+    "Gesits": [
+      "Gesits G1",
+      "Gesits Raya",
+      "Gesits Raya & Garuda"
+    ],
+    "Honda": [
+      "ADV",
+      "Beat",
+      "CB150R",
+      "CB150R & CB150X",
+      "CB150X",
+      "CBR 150R",
+      "CBR 250RR",
+      "CBR 250RR & 250R",
+      "CRF 150L",
+      "CRF 150L & CRF 250",
+      "EM1 e: & EV Series",
+      "Forza",
+      "Genio",
+      "Genio & Spacy",
+      "PCX",
+      "Scoopy",
+      "Sonic 150R",
+      "Stylo 160",
+      "Supra Series & Revo",
+      "Supra X / GTR",
+      "Vario",
+      "Verza & MegaPro"
+    ],
+    "Kawasaki": [
+      "D-Tracker & KLX SM",
+      "D-Tracker 150",
+      "Eliminator",
+      "KLX 150",
+      "KLX 230 & KLX 250",
+      "Ninja 150 (2-Tak Legend)",
+      "Ninja 250",
+      "Ninja ZX Series",
+      "Ninja ZX-25R",
+      "Ninja e-1 & Z e-1",
+      "Supermoto (D-Tracker & KLX SM)",
+      "W175",
+      "Z Series & Versys"
+    ],
+    "Piaggio": [
+      "Beverly",
+      "Liberty",
+      "MP3",
+      "MP3 & Beverly",
+      "Medley",
+      "Zip"
+    ],
+    "Polytron": [
+      "Fox-500 & T-Rex",
+      "Fox-R",
+      "Fox-S",
+      "T-Rex"
+    ],
+    "Suzuki": [
+      "Burgman & Access",
+      "Burgman & Avenis",
+      "Burgman & Nex & Address",
+      "Burgman Street 125EX",
+      "GSX 150 Series",
+      "GSX-R150",
+      "GSX-R150 & GSX-S150",
+      "Nex & Address",
+      "Satria F150",
+      "V-Strom & Inazuma",
+      "V-Strom 250SX",
+      "V-Strom Series"
+    ],
+    "TVS": [
+      "Apache RTR",
+      "Apache RTR & iQube",
+      "Callisto",
+      "Ronin"
+    ],
+    "Vespa (Piaggio)": [
+      "946 & Elettrica",
+      "GTS",
+      "GTS & GTV",
+      "LX",
+      "LX & S",
+      "Primavera",
+      "S",
+      "Sprint"
+    ],
+    "Viar": [
+      "Viar N & EV Series",
+      "Viar N Series",
+      "Viar Q1"
+    ],
+    "Yadea": [
+      "Yadea E8S Pro",
+      "Yadea G6",
+      "Yadea G6 & Keeness",
+      "Yadea T9",
+      "Yadea T9 & Minio"
+    ],
+    "Yamaha": [
+      "Aerox",
+      "Classy (Fazzio & Filano)",
+      "Fazzio",
+      "Gear 125 & FreeGo",
+      "Gear, FreeGo & Soul GT",
+      "Grand Filano",
+      "Jupiter & Vega",
+      "Lexi",
+      "MT-15 & MT-25 & Vixion",
+      "MX King & Jupiter",
+      "MX King 150",
+      "Mio",
+      "Mio & Fazzio & Filano",
+      "NMAX",
+      "Neo's & E01",
+      "PG-1",
+      "Vixion & MT-15",
+      "Vixion, Byson & MT-15",
+      "WR 155R",
+      "X-Ride & Fino",
+      "XMAX",
+      "XMAX & TMAX",
+      "XSR 155",
+      "XSR 155 & WR 155 R",
+      "YZF-R15",
+      "YZF-R15 & R25",
+      "YZF-R25 & MT-25"
+    ]
+  },
+  "rentang_tahun": [
+    2012,
+    2026
+  ],
+  "status_pajak": [
+    "Hidup / Panjang",
+    "Mati / Off",
+    "Unknown"
+  ],
+  "jenis_penjual": [
+    "Dealer",
+    "Individual"
+  ]
+}

@@ -1,0 +1,337 @@
+{% extends 'base.html' %}
+
+{% block title %}Analisis Visual Grafik{% endblock %}
+
+{% block extra_head %}
+<!-- Chart.js Pinned Version -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 20px;">
+    <h2 style="font-size: 26px; font-weight: 800; color: #1E293B; letter-spacing: -0.5px;">Visualisasi Analitik Data & Model</h2>
+    <p style="color: #64748B; font-size: 14px; margin-top: 4px;">Eksplorasi visual hubungan antar variabel harga motor bekas dan akurasi model Machine Learning.</p>
+</div>
+
+<!-- Grid 4 Grafik -->
+<div class="grid-2">
+    <!-- Grafik 1: Harga vs Tahun -->
+    <div class="card">
+        <h3 class="card-title"><svg class="ikon" width="20" height="20" aria-hidden="true"><use href="#i-calendar"/></svg> 1. Tren Harga Rata-Rata vs Tahun</h3>
+        <p class="card-subtitle">Menunjukkan tren depresiasi nilai kendaraan seiring bertambahnya usia motor (2012 - 2026).</p>
+        <div style="height: 320px; position: relative;">
+            <canvas id="chartTahun"></canvas>
+        </div>
+        <button class="btn-jelaskan-ai" onclick="jelaskanGrafik('tahun', this)">
+            <svg class="ikon" width="14" height="14" aria-hidden="true"><use href="#i-sparkle"/></svg>
+            <span class="btn-jelaskan-teks">Jelaskan dengan AI</span>
+        </button>
+        <div class="chart-ai-box" id="aiBoxTahun" style="display: none;">
+            <div class="chart-ai-header">
+                <div class="chart-ai-title">
+                    <svg class="ikon" width="15" height="15" aria-hidden="true"><use href="#i-sparkle"/></svg>
+                    <span>Penjelasan AI</span>
+                </div>
+                <span class="chart-ai-badge" id="aiSumberTahun"></span>
+            </div>
+            <p class="chart-ai-text" id="aiTeksTahun"></p>
+        </div>
+    </div>
+
+    <!-- Grafik 2: Harga per Merek -->
+    <div class="card">
+        <h3 class="card-title"><svg class="ikon" width="20" height="20" aria-hidden="true"><use href="#i-tag"/></svg> 2. Harga Rata-Rata per Merek</h3>
+        <p class="card-subtitle">Komparasi nilai rata-rata pasar per merek (setelah filter merek premium dibuang).</p>
+        <div style="height: 320px; position: relative;">
+            <canvas id="chartMerek"></canvas>
+        </div>
+        <button class="btn-jelaskan-ai" onclick="jelaskanGrafik('merek', this)">
+            <svg class="ikon" width="14" height="14" aria-hidden="true"><use href="#i-sparkle"/></svg>
+            <span class="btn-jelaskan-teks">Jelaskan dengan AI</span>
+        </button>
+        <div class="chart-ai-box" id="aiBoxMerek" style="display: none;">
+            <div class="chart-ai-header">
+                <div class="chart-ai-title">
+                    <svg class="ikon" width="15" height="15" aria-hidden="true"><use href="#i-sparkle"/></svg>
+                    <span>Penjelasan AI</span>
+                </div>
+                <span class="chart-ai-badge" id="aiSumberMerek"></span>
+            </div>
+            <p class="chart-ai-text" id="aiTeksMerek"></p>
+        </div>
+    </div>
+
+    <!-- Grafik 3: Harga vs Kilometer -->
+    <div class="card">
+        <h3 class="card-title"><svg class="ikon" width="20" height="20" aria-hidden="true"><use href="#i-road"/></svg> 3. Hubungan Jarak Tempuh (KM) vs Harga</h3>
+        <p class="card-subtitle">Pengaruh akumulasi kilometer (odometer) terhadap rata-rata harga jual motor bekas.</p>
+        <div style="height: 320px; position: relative;">
+            <canvas id="chartKm"></canvas>
+        </div>
+        <button class="btn-jelaskan-ai" onclick="jelaskanGrafik('km', this)">
+            <svg class="ikon" width="14" height="14" aria-hidden="true"><use href="#i-sparkle"/></svg>
+            <span class="btn-jelaskan-teks">Jelaskan dengan AI</span>
+        </button>
+        <div class="chart-ai-box" id="aiBoxKm" style="display: none;">
+            <div class="chart-ai-header">
+                <div class="chart-ai-title">
+                    <svg class="ikon" width="15" height="15" aria-hidden="true"><use href="#i-sparkle"/></svg>
+                    <span>Penjelasan AI</span>
+                </div>
+                <span class="chart-ai-badge" id="aiSumberKm"></span>
+            </div>
+            <p class="chart-ai-text" id="aiTeksKm"></p>
+        </div>
+    </div>
+
+    <!-- Grafik 4: Prediksi vs Harga Asli -->
+    <div class="card">
+        <h3 class="card-title"><svg class="ikon" width="20" height="20" aria-hidden="true"><use href="#i-target"/></svg> 4. Perbandingan Harga Asli vs Prediksi Model</h3>
+        <p class="card-subtitle">Sampel perbandingan antara harga riil dataset dengan tebakan model Random Forest.</p>
+        <div style="height: 320px; position: relative;">
+            <canvas id="chartPrediksiAsli"></canvas>
+        </div>
+        <button class="btn-jelaskan-ai" onclick="jelaskanGrafik('prediksi_vs_asli', this)">
+            <svg class="ikon" width="14" height="14" aria-hidden="true"><use href="#i-sparkle"/></svg>
+            <span class="btn-jelaskan-teks">Jelaskan dengan AI</span>
+        </button>
+        <div class="chart-ai-box" id="aiBoxPrediksi" style="display: none;">
+            <div class="chart-ai-header">
+                <div class="chart-ai-title">
+                    <svg class="ikon" width="15" height="15" aria-hidden="true"><use href="#i-sparkle"/></svg>
+                    <span>Penjelasan AI</span>
+                </div>
+                <span class="chart-ai-badge" id="aiSumberPrediksi"></span>
+            </div>
+            <p class="chart-ai-text" id="aiTeksPrediksi"></p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const dataGrafik = {{ data_grafik_json|safe }};
+
+    // Palet warna indigo dashboard
+    const warnaIndigo = '#4C63D2';
+    const warnaIndigoLight = 'rgba(76, 99, 210, 0.2)';
+    const warnaGreen = '#10B981';
+    const warnaOrange = '#F59E0B';
+
+    // 1. Chart Tahun (Line Area)
+    new Chart(document.getElementById('chartTahun'), {
+        type: 'line',
+        data: {
+            labels: dataGrafik.tahun.labels,
+            datasets: [{
+                label: 'Harga Rata-Rata (Juta Rp)',
+                data: dataGrafik.tahun.values,
+                borderColor: warnaIndigo,
+                backgroundColor: warnaIndigoLight,
+                fill: true,
+                tension: 0.35,
+                pointBackgroundColor: warnaIndigo,
+                pointRadius: 4,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'top' },
+                tooltip: {
+                    callbacks: {
+                        label: (ctx) => `Rp ${ctx.parsed.y} Juta`
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    title: { display: true, text: 'Juta Rupiah' },
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+
+    // 2. Chart Merek (Bar Chart)
+    new Chart(document.getElementById('chartMerek'), {
+        type: 'bar',
+        data: {
+            labels: dataGrafik.merek.labels,
+            datasets: [{
+                label: 'Rata-rata Harga (Juta Rp)',
+                data: dataGrafik.merek.values,
+                backgroundColor: '#3B4EAF',
+                borderRadius: 8,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: (ctx) => `Rp ${ctx.parsed.y} Juta`
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    title: { display: true, text: 'Juta Rupiah' },
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+
+    // 3. Chart KM (Bar Chart Rentang KM)
+    new Chart(document.getElementById('chartKm'), {
+        type: 'bar',
+        data: {
+            labels: dataGrafik.km.labels,
+            datasets: [{
+                label: 'Rata-rata Harga (Juta Rp)',
+                data: dataGrafik.km.values,
+                backgroundColor: '#10B981',
+                borderRadius: 8,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: (ctx) => `Rp ${ctx.parsed.y} Juta`
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    title: { display: true, text: 'Juta Rupiah' },
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+
+    // 4. Chart Prediksi vs Asli (Double Bar Komparasi)
+    new Chart(document.getElementById('chartPrediksiAsli'), {
+        type: 'bar',
+        data: {
+            labels: dataGrafik.prediksi_vs_asli.labels,
+            datasets: [
+                {
+                    label: 'Harga Asli',
+                    data: dataGrafik.prediksi_vs_asli.asli,
+                    backgroundColor: 'rgba(100, 116, 139, 0.6)',
+                    borderRadius: 6
+                },
+                {
+                    label: 'Tebakan Model (ML)',
+                    data: dataGrafik.prediksi_vs_asli.prediksi,
+                    backgroundColor: warnaIndigo,
+                    borderRadius: 6
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: {
+                    ticks: {
+                        maxRotation: 45,
+                        minRotation: 45,
+                        font: { size: 10 }
+                    }
+                },
+                y: {
+                    title: { display: true, text: 'Juta Rupiah' },
+                    beginAtZero: true
+                }
+            },
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: (ctx) => `${ctx.dataset.label}: Rp ${ctx.parsed.y} Juta`
+                    }
+                }
+            }
+        }
+    });
+
+    // Fungsi AJAX on-demand: dipanggil per grafik saat tombol diklik
+    // kunci: 'tahun' | 'merek' | 'km' | 'prediksi_vs_asli'
+    const idPeta = {
+        tahun: { box: 'aiBoxTahun', teks: 'aiTeksTahun', sumber: 'aiSumberTahun' },
+        merek: { box: 'aiBoxMerek', teks: 'aiTeksMerek', sumber: 'aiSumberMerek' },
+        km:    { box: 'aiBoxKm',    teks: 'aiTeksKm',    sumber: 'aiSumberKm'    },
+        prediksi_vs_asli: { box: 'aiBoxPrediksi', teks: 'aiTeksPrediksi', sumber: 'aiSumberPrediksi' }
+    };
+
+    // Cache hasil agar tidak memanggil API ulang jika sudah pernah dijelaskan
+    const cacheAi = {};
+
+    async function jelaskanGrafik(kunci, tombol) {
+        const peta = idPeta[kunci];
+        if (!peta) return;
+
+        const box   = document.getElementById(peta.box);
+        const elTeks   = document.getElementById(peta.teks);
+        const elSumber = document.getElementById(peta.sumber);
+        const elBtnTeks = tombol.querySelector('.btn-jelaskan-teks');
+
+        // Jika sudah ada cache, cukup tampilkan/sembunyikan (toggle)
+        if (cacheAi[kunci]) {
+            box.style.display = box.style.display === 'none' ? 'block' : 'none';
+            if (box.style.display === 'none') {
+                tombol.classList.remove('aktif');
+                if (elBtnTeks) elBtnTeks.textContent = 'Jelaskan dengan AI';
+            } else {
+                tombol.classList.add('aktif');
+                if (elBtnTeks) elBtnTeks.textContent = 'Sembunyikan';
+            }
+            return;
+        }
+
+        // Panggil API pertama kali
+        tombol.disabled = true;
+        tombol.style.opacity = '0.65';
+        if (elBtnTeks) elBtnTeks.textContent = 'AI sedang menganalisis...';
+
+        // Tampilkan box dengan placeholder loading
+        box.style.display = 'block';
+        elTeks.textContent = 'Meminta penjelasan dari AI, mohon tunggu sebentar...';
+        elSumber.textContent = '';
+
+        try {
+            const resp = await fetch("{% url 'api_jelaskan_grafik' %}?force=1");
+            const data = await resp.json();
+            if (data.status === 'ok' && data.penjelasan) {
+                const p = data.penjelasan;
+                // Simpan ke cache semua kunci sekaligus
+                Object.keys(idPeta).forEach(k => { cacheAi[k] = p[k] || ''; });
+
+                elTeks.textContent = p[kunci] || 'Penjelasan tidak tersedia.';
+                elSumber.textContent = p.sumber || 'Gemini AI';
+                tombol.classList.add('aktif');
+                if (elBtnTeks) elBtnTeks.textContent = 'Sembunyikan';
+            } else {
+                elTeks.textContent = 'Gagal mendapatkan penjelasan dari AI.';
+                elSumber.textContent = '';
+            }
+        } catch (err) {
+            elTeks.textContent = 'Terjadi kesalahan saat menghubungi AI.';
+            console.error(err);
+        } finally {
+            tombol.disabled = false;
+            tombol.style.opacity = '1';
+        }
+    }
+</script>
+{% endblock %}

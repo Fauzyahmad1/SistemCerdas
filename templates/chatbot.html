@@ -1,0 +1,144 @@
+{% extends 'base.html' %}
+
+{% block title %}Asisten Chatbot FAQ Motor Bekas{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 8px;">
+    <h2 style="font-size: 26px; font-weight: 800; color: #1E293B; letter-spacing: -0.5px;">Chatbot FAQ Jual Beli Motor Bekas</h2>
+    <p style="color: #64748B; font-size: 14px; margin-top: 4px;">Asisten berbasis AI dan RAG mini yang menjawab seputar tips negosiasi, cek mesin, status pajak, dan legalitas surat.</p>
+</div>
+
+<div class="grid-2">
+    <!-- Area Chatbot Interaktif -->
+    <div class="card" style="display: flex; flex-direction: column;">
+        <h3 class="card-title"><svg class="ikon" width="20" height="20" aria-hidden="true"><use href="#i-message-circle"/></svg> Percakapan Interaktif</h3>
+        <p class="card-subtitle">AI menjawab maksimal 2 kalimat berdasarkan data panduan resmi.</p>
+
+        <div class="chat-container">
+            <!-- Kotak Pesan -->
+            <div id="chatMessages" class="chat-messages">
+                <div class="message-bubble bubble-bot">
+                    Halo! Saya asisten virtual jual-beli motor bekas. Ada yang bisa saya bantu seputar pengecekan mesin, pajak, kelengkapan surat (STNK/BPKB), atau tips menawar harga?
+                </div>
+            </div>
+
+            <!-- Input Chat -->
+            <form id="formChat" class="chat-input-bar">
+                <input type="text" id="inputPertanyaan" class="form-control" 
+                       placeholder="Tanyakan hal seperti: bagaimana cara cek surat bpkb asli?" required autocomplete="off">
+                <button type="submit" id="btnKirimChat" class="btn btn-primary" style="padding: 12px 20px;">
+                    <span>Kirim</span>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Panel Contoh Pertanyaan & Panduan FAQ -->
+    <div class="card">
+        <h3 class="card-title"><svg class="ikon" width="20" height="20" aria-hidden="true"><use href="#i-lightbulb"/></svg> Topik Pertanyaan Populer (Klik Cepat)</h3>
+        <p class="card-subtitle">Klik salah satu pertanyaan di bawah untuk mencobanya langsung ke asisten bot:</p>
+
+        <div class="faq-chips">
+            <button class="chip" onclick="kirimPertanyaanCepat('Bagaimana cara mengecek keaslian STNK dan BPKB motor bekas?')">
+                <svg class="ikon" width="16" height="16" aria-hidden="true"><use href="#i-file-text"/></svg> Cek Keaslian STNK/BPKB
+            </button>
+            <button class="chip" onclick="kirimPertanyaanCepat('Apa akibat jika pajak motor mati dan bagaimana cara mengeceknya?')">
+                <svg class="ikon" width="16" height="16" aria-hidden="true"><use href="#i-alert-triangle"/></svg> Pajak Motor Mati & Denda
+            </button>
+            <button class="chip" onclick="kirimPertanyaanCepat('Bagaimana prosedur dan syarat balik nama motor bekas ke Samsat?')">
+                <svg class="ikon" width="16" height="16" aria-hidden="true"><use href="#i-building"/></svg> Prosedur Balik Nama Samsat
+            </button>
+            <button class="chip" onclick="kirimPertanyaanCepat('Bagaimana cara memeriksa kondisi mesin motor bekas saat COD?')">
+                <svg class="ikon" width="16" height="16" aria-hidden="true"><use href="#i-settings"/></svg> Cek Bunyi & Rembesan Mesin
+            </button>
+            <button class="chip" onclick="kirimPertanyaanCepat('Faktor apa saja yang menyebabkan harga motor bekas turun drastis?')">
+                <svg class="ikon" width="16" height="16" aria-hidden="true"><use href="#i-trending-down"/></svg> Faktor Penurun Harga Pasar
+            </button>
+            <button class="chip" onclick="kirimPertanyaanCepat('Apa tips tawar menawar harga motor bekas agar dapat diskon?')">
+                <svg class="ikon" width="16" height="16" aria-hidden="true"><use href="#i-users"/></svg> Tips Tawar-Menawar Harga
+            </button>
+            <button class="chip" onclick="kirimPertanyaanCepat('Bagaimana cara test drive motor bekas yang aman dan teliti?')">
+                <svg class="ikon" width="16" height="16" aria-hidden="true"><use href="#i-bike"/></svg> Tips Uji Jalan (Test Drive)
+            </button>
+            <button class="chip" onclick="kirimPertanyaanCepat('Dokumen dan kwitansi apa yang wajib disiapkan saat transaksi motor?')">
+                <svg class="ikon" width="16" height="16" aria-hidden="true"><use href="#i-clipboard-list"/></svg> Dokumen & Kwitansi Transaksi
+            </button>
+            <button class="chip" onclick="kirimPertanyaanCepat('Berapa resep nasi goreng?')">
+                <svg class="ikon" width="16" height="16" aria-hidden="true"><use href="#i-help-circle"/></svg> Uji Luar Topik (Bukan FAQ)
+            </button>
+        </div>
+
+        <div style="margin-top: 24px; padding: 16px; background: #EEF2FF; border-radius: var(--radius-md); border: 1px solid #C7D2FE; font-size: 13px; line-height: 1.6; color: #3730A3;">
+            <strong>Mekanisme RAG & Fallback:</strong>
+            <ul style="margin-left: 18px; margin-top: 6px;">
+                <li>Pertanyaan diproses: huruf kecil, hapus simbol, dan perluasan sinonim kata kunci.</li>
+                <li>Sistem mencari 2 entri FAQ paling cocok untuk disisipkan sebagai konteks prompt AI.</li>
+                <li>Jika tidak ada topik yang relevan, AI langsung menolak secara jujur tanpa memanggil API eksternal.</li>
+                <li>Jika Gemini REST API offline atau kuota habis, bot otomatis menampilkan kutipan FAQ resmi dengan label <code>[AI sedang tidak tersedia]</code>.</li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const formChat = document.getElementById('formChat');
+    const inputPertanyaan = document.getElementById('inputPertanyaan');
+    const chatMessages = document.getElementById('chatMessages');
+    const btnKirimChat = document.getElementById('btnKirimChat');
+
+    function tambahkanPesan(pengirim, teks) {
+        const div = document.createElement('div');
+        div.className = `message-bubble ${pengirim === 'user' ? 'bubble-user' : 'bubble-bot'}`;
+        div.style.whiteSpace = 'pre-wrap';
+        div.textContent = teks;
+        chatMessages.appendChild(div);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+        return div;
+    }
+
+    async function prosesKirim(pertanyaan) {
+        if (!pertanyaan.trim()) return;
+
+        tambahkanPesan('user', pertanyaan);
+        inputPertanyaan.value = '';
+        btnKirimChat.disabled = true;
+
+        // Indikator bot sedang berpikir
+        const bubbleLoading = tambahkanPesan('bot', 'Sedang mencari di FAQ & merangkum...');
+
+        try {
+            const resp = await fetch("{% url 'api_chatbot' %}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ pertanyaan: pertanyaan })
+            });
+
+            const data = await resp.json();
+            if (data.status === 'ok') {
+                bubbleLoading.textContent = data.jawaban;
+            } else {
+                bubbleLoading.textContent = data.jawaban || "Maaf, terjadi kesalahan: " + data.pesan;
+            }
+        } catch (err) {
+            bubbleLoading.textContent = "[Koneksi Terganggu] Tidak dapat terhubung ke server. Silakan periksa jaringan.";
+        } finally {
+            btnKirimChat.disabled = false;
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+    }
+
+    formChat.addEventListener('submit', function(e) {
+        e.preventDefault();
+        prosesKirim(inputPertanyaan.value);
+    });
+
+    function kirimPertanyaanCepat(teks) {
+        inputPertanyaan.value = teks;
+        prosesKirim(teks);
+    }
+</script>
+{% endblock %}
